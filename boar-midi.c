@@ -13,7 +13,7 @@ typedef struct Settings {
   bool          noblock;
 } Settings;
 
-Settings setChannel(Settings s, char *a, char *f) {
+Settings setCh(Settings s, char *a, char *f) {
   int ch = atoi(a);
   if (ch < 1 || ch > 16) { errx(1, "Invalid channel %d", ch); }
   s.out[ch - 1] = fopen(f, "w");
@@ -31,7 +31,7 @@ Settings readArgs(int argc, char **argv) {
     a = argv[i];
     if      (strcmp(a, "-noblock") == 0) { s.noblock = true; }
     else if (strcmp(a, "-input") == 0)   { s.in = argv[++i]; }
-    else if (a[0] == '-' && a[1] == 'c') { s = setChannel(s, a + 2, argv[++i]); }
+    else if (a[0] == '-' && a[1] == 'c') { s = setCh(s, a + 2, argv[++i]); }
     else                                 { errx(1, "Invalid arg %s", a); }
   }
   return s;
