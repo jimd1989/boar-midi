@@ -40,8 +40,9 @@ Settings readArgs(int argc, char **argv) {
 int main(int argc, char **argv) {
   uint8_t buf[BUFSIZE] = {0};
   struct mio_hdl *m;
-  int i, read, ch, note, velocity = 0;
+  int i, read, ch, note, vel = 0;
   Settings s = readArgs(argc, argv);
+  FILE *o = NULL;
 
   m = mio_open(s.in, MIO_IN, s.noblock);
   if (m == NULL) { errx(1, "Couldn't find MIDI device %s", s.in); }
@@ -51,12 +52,12 @@ int main(int argc, char **argv) {
       ch = 144^buf[i];
       if (ch < 16) {
         note = buf[++i];
-        velocity = buf[++i];
-        if (!velocity) { fprintf(s.out[ch], "o%d\n", note); }
-        else           { fprintf(s.out[ch], "n%d\n", note | (velocity << 9)); }
+        vel = buf[++i];
+        o = s.out[ch];
+        if (!vel) { fprintf(o, "o%d\n", note); fflush(o); }
+        else      { fprintf(o, "n%d\n", note | (vel << 9)); fflush(o); }
       }
     }
-    fflush(stdout);
   }
   return 0;
 }
