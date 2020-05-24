@@ -4,7 +4,7 @@ Convert MIDI on/off messages to [boar](https://github.com/jimd1989/boar) command
 
 ## Build
 
-  cc boar-midi.c -lsndio -o boar-midi
+    cc boar-midi.c -lsndio -o boar-midi
 
 ## Usage
 
