@@ -10,13 +10,15 @@ Requires sndio, which comes installed by default on OpenBSD. Nothing else is sup
 
 ## Usage
 
-    boar-midi <-input file|-noblock|-cn file> | boar
+    boar-midi <-input file|-noblock|-delay n|-cn file> | boar
 
 The program will listen to all channels at `rmidi0` by default. Use `-input file` to read from the MIDI device at `file` instead.
 
 Input is blocking. You can increase responsiveness with the `-noblock` flag, but this will require far more computing power.
 
 Input from all 16 MIDI channels will go to stdout unless redirected. An argument of `-cn file` where `n` is a number between 1 and 16 will send all notes found on MIDI channel `n` to `file`.
+
+Some MIDI sequencers send an off signal at the same time as their on signal. If the instrument further down the pipe is having trouble with this, you can delay the printing of an off signal for `n` microseconds with the `-delay n` flag.
 
 ## Caveats
 

@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define BUFSIZE 64
 
 typedef struct Settings {
+  int           delay;
   char        * in;  
   FILE        * out[16];
   bool          noblock;
@@ -31,6 +33,7 @@ Settings readArgs(int argc, char **argv) {
     a = argv[i];
     if      (strcmp(a, "-noblock") == 0) { s.noblock = true; }
     else if (strcmp(a, "-input") == 0)   { s.in = argv[++i]; }
+    else if (strcmp(a, "-delay") == 0)   { s.delay = atoi(argv[++i]); }
     else if (a[0] == '-' && a[1] == 'c') { s = setCh(s, a + 2, argv[++i]); }
     else                                 { errx(1, "Invalid arg %s", a); }
   }
@@ -54,7 +57,7 @@ int main(int argc, char **argv) {
         note = buf[++i];
         vel = buf[++i];
         o = s.out[ch];
-        if (!vel) { fprintf(o, "o%d\n", note); fflush(o); }
+        if (!vel) { usleep(s.delay); fprintf(o, "o%d\n", note); fflush(o); }
         else      { fprintf(o, "n%d\n", note | (vel << 9)); fflush(o); }
       }
     }
