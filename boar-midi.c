@@ -57,8 +57,14 @@ int main(int argc, char **argv) {
         note = buf[++i];
         vel = buf[++i];
         o = s.out[ch];
-        if (!vel) { usleep(s.delay); fprintf(o, "o%d\n", note); fflush(o); }
-        else      { fprintf(o, "n%d\n", note | (vel << 9)); fflush(o); }
+        if (!vel) { 
+          if (s.delay) { usleep(s.delay); } 
+          fprintf(o, "o%d\n", note); 
+          fflush(o); 
+        } else {
+          fprintf(o, "n%d\n", note | (vel << 9)); 
+          fflush(o); 
+        }
       }
     }
   }
