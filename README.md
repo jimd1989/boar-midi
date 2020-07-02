@@ -31,15 +31,21 @@ To use the `n` and `o` commands from `boar` as MIDI on and off events respective
 
     boar -echo-notes | boar-midi <MIDI channel> <MIDI port (optional)>
 
-The program will write to `rmidi0` if a port is not specified. Velocity is ignored for now. On/off events can be newline delimited like
+The program will write to `rmidi0` if a port is not specified. Velocity is ignored for now. On/off events are newline delimited exclusively, like
 
     n 60
     n 63
     n 67
 
-or written compactly like
+If you'd prefer to express chords in a compact manner, such as
 
     n60;n63;n67
+
+then just put
+
+    tr ';' '\n'
+
+somewhere in your pipe. Use the broader Unix environment to add features rather than expecting them from the program itself.
 
 I suspect that there are some edge cases where the parser will fail, but it's unlikely that the input will be hand-written. It should read from `boar -echo-notes` fine.
 
