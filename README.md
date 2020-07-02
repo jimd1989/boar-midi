@@ -47,7 +47,8 @@ then just put
 
 somewhere in your pipe. Use the broader Unix environment to add features rather than expecting them from the program itself.
 
-I've noticed that larger chords are silently ignored on my old laptop or old synthesizer; I'm not sure which. Using the included `delay.sh` script with an imperceptible delay value between each MIDI note seems to fix this problem.
+I've noticed that larger chords are silently ignored on my old laptop or old synthesizer; I'm not sure which. Using the included `delay.sh` script with an imperceptible delay value between each MIDI note seems to fix this problem. The buffering behavior of `tr` itself might prove to be a problem too. I believe that there are GNU utils to get around this, but I've also included a `semicolons.c` if you'd prefer to address this issue directly.
+
 
 I suspect that there are some edge cases where the parser will fail, but it's unlikely that the input will be hand-written. It should read from `boar -echo-notes` fine.
 
