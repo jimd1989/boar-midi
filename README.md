@@ -47,6 +47,8 @@ then just put
 
 somewhere in your pipe. Use the broader Unix environment to add features rather than expecting them from the program itself.
 
+I've noticed that larger chords are silently ignored on my old laptop or old synthesizer; I'm not sure which. Using the included `delay.sh` script with an imperceptible delay value between each MIDI note seems to fix this problem.
+
 I suspect that there are some edge cases where the parser will fail, but it's unlikely that the input will be hand-written. It should read from `boar -echo-notes` fine.
 
 ## Caveats
