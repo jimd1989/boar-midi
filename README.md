@@ -44,5 +44,3 @@ See the [boar-extras](https://github.com/jimd1989/boar-extras) package for addit
 ## Caveats
 
 + Other MIDI instructions are completely ignored.
-+ The program listens for note off signals as note on signals with zero velocity. This is how all my hardware (SQ-1 and JX8P) does it.
-+ Conversely, Boar→MIDI encoding sends note off signals in an explicit manner, because it was easier to code.

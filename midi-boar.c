@@ -52,11 +52,19 @@ int main(int argc, char **argv) {
   while (1) {
     read = mio_read(m, buf, BUFSIZE); 
     for (i = 0; i < read; i++) {
-      ch = 144^buf[i];
+      ch = 128^buf[i];
       if (ch < 16) {
         note = buf[++i];
         vel = buf[++i];
         o = s.out[ch];
+        if (s.delay) { usleep(s.delay); }
+        fprintf(o, "o%d\n", note);
+        fflush(o);
+      }
+      else if (ch < 32) {
+        note = buf[++i];
+        vel = buf[++i];
+        o = s.out[ch - 16];
         if (!vel) { 
           if (s.delay) { usleep(s.delay); } 
           fprintf(o, "o%d\n", note); 
