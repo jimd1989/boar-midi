@@ -27,7 +27,7 @@ Settings readArgs(int argc, char **argv) {
   Settings s = {0};
   char *a = NULL;
   int i = 0;
-  s.in = "rmidi/0";
+  s.in = MIO_PORTANY;
   for (; i < 16; i++) { s.out[i] = stdout; }
   for (i = 1 ; i < argc ; i++) {
     a = argv[i];

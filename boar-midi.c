@@ -23,7 +23,7 @@ void parseNote(uint8_t *mbuf, char *s) {
 }
 
 int main(int argc, char **argv) {
-  char                  * out           = "rmidi/0";
+  char                  * out           = MIO_PORTANY;
   int                     ch            = 0;
   struct mio_hdl        * m             = NULL;
   uint8_t                 mbuf[3]       = {0};

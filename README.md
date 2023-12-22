@@ -17,7 +17,7 @@ To read MIDI data from a port into a `boar` instance, run
 
     midi-boar <-input file|-noblock|-delay n|-cn file> | boar
 
-The program will listen to all channels at `rmidi0` by default. Use `-input file` to read from the MIDI device at `file` instead.
+The program will listen to all channels at `midi/0` by default. Use `-input file` to read from the MIDI device at `file` instead.
 
 Input is blocking. You can increase responsiveness with the `-noblock` flag, but this will require far more computing power.
 
@@ -31,7 +31,7 @@ To use the `n` and `o` commands from `boar` as MIDI on and off events respective
 
     boar -echo-notes | boar-midi <MIDI channel> <MIDI port (optional)>
 
-The program will write to `rmidi0` if a port is not specified. Velocity is ignored for now. On/off events are newline delimited exclusively, like
+The program will write to `midi/0` if a port is not specified. Velocity is ignored for now. On/off events are newline delimited exclusively, like
 
     n 60
     n 63
