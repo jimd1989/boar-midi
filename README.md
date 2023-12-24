@@ -15,17 +15,19 @@ Requires sndio, which comes installed by default on OpenBSD. Nothing else is sup
 
 To read MIDI data from a port into a `boar` instance, run
 
-    midi-boar <-input file|-noblock|-delay n|-cn file> | boar
+    midi-boar <-c n|-delay n> | boar
 
-The program will listen to all channels at `midi/0` by default. Use `-input file` to read from the MIDI device at `file` instead.
+The program will listen to all channels at `midi/0` by default. Set `MIDIDEVICE` environment variable to read from something else.
 
-Input is blocking. You can increase responsiveness with the `-noblock` flag, but this will require far more computing power.
+Input will always go to stdout. Redirect using standard Unix conventions.
 
-Input from all 16 MIDI channels will go to stdout unless redirected. An argument of `-cn file` where `n` is a number between 1 and 16 will send all notes found on MIDI channel `n` to `file`.
+Will read from all 16 MIDI channels by default. To filter for a specific channel, use the `-c n` argument, where `n` is the channel number. Run multiple instances of `midi-boar` to read from multiple specific channels; sndio's handling of the MIDI port is efficient enough to support many readers.
 
 Some MIDI sequencers send an off signal at the same time as their on signal. If the instrument further down the pipe is having trouble with this, you can delay the printing of an off signal for `n` microseconds with the `-delay n` flag.
 
 ### Boar → MIDI
+
+While `midi-boar` has been extensively refactored to be more efficient and composable, this program hasn't. Its commands and internals are subject to change pending the author's level of motivation.
 
 To use the `n` and `o` commands from `boar` as MIDI on and off events respectively, run
 

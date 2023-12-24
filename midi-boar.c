@@ -1,4 +1,5 @@
 #include <err.h>
+#include <poll.h>
 #include <sndio.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -6,38 +7,45 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BUFSIZE 64
+#define BUFSIZE 128
 
 typedef struct Settings {
-  int           delay;
-  char        * in;  
-  FILE        * out[16];
-  bool          noblock;
+  int   ch;
+  int   delay;
 } Settings;
-
-Settings setCh(Settings s, char *a, char *f) {
-  int ch = atoi(a);
-  if (ch < 1 || ch > 16) { errx(1, "Invalid channel %d", ch); }
-  s.out[ch - 1] = fopen(f, "w");
-  if (s.out[ch - 1] == NULL) { errx(1, "Failed to open %s", f); }
-  return s;
-}
 
 Settings readArgs(int argc, char **argv) {
   Settings s = {0};
   char *a = NULL;
   int i = 0;
-  s.in = MIO_PORTANY;
-  for (; i < 16; i++) { s.out[i] = stdout; }
+  s.ch = -1;
   for (i = 1 ; i < argc ; i++) {
     a = argv[i];
-    if      (strcmp(a, "-noblock") == 0) { s.noblock = true; }
-    else if (strcmp(a, "-input") == 0)   { s.in = argv[++i]; }
-    else if (strcmp(a, "-delay") == 0)   { s.delay = atoi(argv[++i]); }
-    else if (a[0] == '-' && a[1] == 'c') { s = setCh(s, a + 2, argv[++i]); }
+    if (strcmp(a, "-delay") == 0)        { s.delay = atoi(argv[++i]); }
+    else if (a[0] == '-' && a[1] == 'c') { s.ch = atoi(argv[++i]) - 1; }
     else                                 { errx(1, "Invalid arg %s", a); }
   }
   return s;
+}
+
+void wait(struct mio_hdl *m) {
+    int nfds, revents = 0;
+    struct pollfd pfds[1] = {0};
+    do {
+        nfds = mio_pollfd(m, pfds, POLLIN);
+        if (nfds > 0) {
+            if (poll(pfds, nfds, -1) < 0) {
+                errx(1, "poll failed");
+            }
+        }
+        revents = mio_revents(m, pfds);
+    } while (!(revents & POLLIN));
+}
+
+void print(int delay, char onOff, int note) {
+    if (delay) { usleep(delay); }
+    printf("%c%d\n", onOff, note);
+    fflush(stdout);
 }
 
 int main(int argc, char **argv) {
@@ -45,33 +53,24 @@ int main(int argc, char **argv) {
   struct mio_hdl *m;
   int i, read, ch, note, vel = 0;
   Settings s = readArgs(argc, argv);
-  FILE *o = NULL;
 
-  m = mio_open(s.in, MIO_IN, s.noblock);
-  if (m == NULL) { errx(1, "Couldn't find MIDI device %s", s.in); }
+  m = mio_open(MIO_PORTANY, MIO_IN, true);
+  if (m == NULL) { errx(1, "Couldn't find MIDI device %s", MIO_PORTANY); }
   while (1) {
+    wait(m);
     read = mio_read(m, buf, BUFSIZE); 
     for (i = 0; i < read; i++) {
       ch = 128^buf[i];
-      if (ch < 16) {
+      if ((ch < 16) && ((s.ch == -1) || (s.ch == (ch - 16)))) { 
+          note = buf[++i];
+          print(s.delay, 'o', note); 
+      } else if ((ch < 32) && ((s.ch == -1) || (s.ch == (ch - 16)))) {
         note = buf[++i];
         vel = buf[++i];
-        o = s.out[ch];
-        if (s.delay) { usleep(s.delay); }
-        fprintf(o, "o%d\n", note);
-        fflush(o);
-      }
-      else if (ch < 32) {
-        note = buf[++i];
-        vel = buf[++i];
-        o = s.out[ch - 16];
         if (!vel) { 
-          if (s.delay) { usleep(s.delay); } 
-          fprintf(o, "o%d\n", note); 
-          fflush(o); 
+          print(s.delay, 'o', note);
         } else {
-          fprintf(o, "n%d\n", note | (vel << 9)); 
-          fflush(o); 
+          print(0, 'n', note | (vel << 9));
         }
       }
     }
