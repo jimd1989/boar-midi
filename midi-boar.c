@@ -12,7 +12,19 @@
 #define CHAN_MASK 15
 #define NOTE_OFF 128
 #define NOTE_ON 144
+#define POLY_AFTERTOUCH 160
+#define CC 176
+#define PROGRAM_CHANGE 192
+#define CHAN_AFTERTOUCH 208
+#define PITCH_BEND 224
 #define NOT_EVENT(X) ((X) < 128)
+#define SYSEX_START 240
+#define SYSEX_END 247
+#define MTC 241
+#define SONG_POSITION 242
+#define SONG_SELECT 243
+#define TUNE_REQUEST 246
+#define IS_REAL_TIME_MSG(X) ((X) >= 248)
 
 typedef struct Settings {
   int   ch;
@@ -54,6 +66,7 @@ void print(int delay, char onOff, int note) {
 }
 
 int main(int argc, char **argv) {
+  bool inSysex = false;
   uint8_t buf[BUFSIZE] = {0};
   struct mio_hdl *m;
   int i, event, read, ch, note, vel = 0;
@@ -67,25 +80,42 @@ int main(int argc, char **argv) {
     for (i = 0; i < read; i++) {
       event = buf[i] & EVENT_MASK;
       ch = buf[i] & CHAN_MASK;
-      if ((s.ch == -1) || (s.ch == ch)) {
-        if (event == NOTE_ON) {
-          note = buf[++i];
-          vel = buf[++i];
-          if (!vel) { 
-            print(s.delay, 'o', note);
-          } else {
-            print(0, 'n', note | (vel << 9));
-          }
-        }
-        if (event == NOTE_OFF) {
-          note = buf[++i];
-          if (((i + 1) < read) && NOT_EVENT(buf[i])) {
+      if (event == SYSEX_END) { inSysex = false; }
+      else if (inSysex) { continue; }
+      else if ((event == NOTE_ON) || (event == NOTE_OFF)) {
+        if ((s.ch == -1) || (s.ch == ch)) {
+          if (event == NOTE_ON) {
+            note = buf[++i];
             vel = buf[++i];
-            i++;
+            if (!vel) { 
+              print(s.delay, 'o', note);
+            } else {
+              print(0, 'n', note | (vel << 9));
+            }
           }
-          print(s.delay, 'o', note); 
+          else if (event == NOTE_OFF) {
+            note = buf[++i];
+            if (((i + 1) < read) && NOT_EVENT(buf[i])) {
+              vel = buf[++i];
+              i++;
+            }
+            print(s.delay, 'o', note); 
+          }
         }
-      }
+      } 
+      else if (event == POLY_AFTERTOUCH) { i += 2; }
+      else if (event == CC)              { i += 2; }
+      else if (event == PROGRAM_CHANGE)  { i ++; }
+      else if (event == CHAN_AFTERTOUCH) { i ++; }
+      else if (event == PITCH_BEND)      { i += 2; }
+      else if (event == MTC)             { i ++; }
+      else if (event == SONG_POSITION)   { i += 2; }
+      else if (event == SONG_SELECT)     { i ++; }
+      else if (event == PITCH_BEND)      { i += 2; }
+      else if (event == TUNE_REQUEST)    { continue; }
+      else if (event == SYSEX_START)     { inSysex = true; }
+      else if (IS_REAL_TIME_MSG(event))  { continue; }
+      else                               { continue; }
     }
   }
   return 0;
