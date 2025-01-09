@@ -7,7 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#define BUFSIZE 128
+#define BUFSIZE 2048
+#define EVENT_MASK 240
+#define CHAN_MASK 15
+#define NOTE_OFF 128
+#define NOTE_ON 144
+#define NOT_EVENT(X) ((X) < 128)
 
 typedef struct Settings {
   int   ch;
@@ -51,26 +56,34 @@ void print(int delay, char onOff, int note) {
 int main(int argc, char **argv) {
   uint8_t buf[BUFSIZE] = {0};
   struct mio_hdl *m;
-  int i, read, ch, note, vel = 0;
+  int i, event, read, ch, note, vel = 0;
   Settings s = readArgs(argc, argv);
 
   m = mio_open(MIO_PORTANY, MIO_IN, true);
   if (m == NULL) { errx(1, "Couldn't find MIDI device %s", MIO_PORTANY); }
   while (1) {
     wait(m);
-    read = mio_read(m, buf, BUFSIZE); 
+    read = mio_read(m, buf, BUFSIZE);
     for (i = 0; i < read; i++) {
-      ch = 128^buf[i];
-      if ((ch < 16) && ((s.ch == -1) || (s.ch == (ch - 16)))) { 
+      event = buf[i] & EVENT_MASK;
+      ch = buf[i] & CHAN_MASK;
+      if ((s.ch == -1) || (s.ch == ch)) {
+        if (event == NOTE_ON) {
           note = buf[++i];
+          vel = buf[++i];
+          if (!vel) { 
+            print(s.delay, 'o', note);
+          } else {
+            print(0, 'n', note | (vel << 9));
+          }
+        }
+        if (event == NOTE_OFF) {
+          note = buf[++i];
+          if (((i + 1) < read) && NOT_EVENT(buf[i])) {
+            vel = buf[++i];
+            i++;
+          }
           print(s.delay, 'o', note); 
-      } else if ((ch < 32) && ((s.ch == -1) || (s.ch == (ch - 16)))) {
-        note = buf[++i];
-        vel = buf[++i];
-        if (!vel) { 
-          print(s.delay, 'o', note);
-        } else {
-          print(0, 'n', note | (vel << 9));
         }
       }
     }

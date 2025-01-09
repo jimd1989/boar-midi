@@ -25,6 +25,8 @@ Will read from all 16 MIDI channels by default. To filter for a specific channel
 
 Some MIDI sequencers send an off signal at the same time as their on signal. If the instrument further down the pipe is having trouble with this, you can delay the printing of an off signal for `n` microseconds with the `-delay n` flag.
 
+Devices that send lots of MIDI data, such as a Linnstrument, can overwhelm this program and lead to skipped notes. I haven't figured out if this is a flaw with my underpowered PC, sndio itself, or the code I've written. Turn off X/Y/Z axis transmission on the Linnstrument to fix this, since boar has no use for it anyway.
+
 ### Boar → MIDI
 
 While `midi-boar` has been extensively refactored to be more efficient and composable, this program hasn't. Its commands and internals are subject to change pending the author's level of motivation.
