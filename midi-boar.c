@@ -71,7 +71,6 @@ int main(int argc, char **argv) {
   struct mio_hdl *m;
   int i, event, read, ch, note, vel = 0;
   Settings s = readArgs(argc, argv);
-
   m = mio_open(MIO_PORTANY, MIO_IN, true);
   if (m == NULL) { errx(1, "Couldn't find MIDI device %s", MIO_PORTANY); }
   while (1) {
@@ -97,7 +96,6 @@ int main(int argc, char **argv) {
             note = buf[++i];
             if (((i + 1) < read) && NOT_EVENT(buf[i])) {
               vel = buf[++i];
-              i++;
             }
             print(s.delay, 'o', note); 
           }
