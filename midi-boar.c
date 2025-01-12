@@ -24,7 +24,7 @@
 #define SONG_POSITION 242
 #define SONG_SELECT 243
 #define TUNE_REQUEST 246
-#define IS_REAL_TIME_MSG(X) ((X) >= 248)
+#define REAL_TIME_EVENT 248
 
 typedef struct Settings {
   int   ch;
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     for (i = 0; i < read; i++) {
       event = buf[i] & EVENT_MASK;
       ch = buf[i] & CHAN_MASK;
-      if (event == SYSEX_END) { inSysex = false; }
+      if (buf[i] == SYSEX_END) { inSysex = false; }
       else if (inSysex) { continue; }
       else if ((event == NOTE_ON) || (event == NOTE_OFF)) {
         if ((s.ch == -1) || (s.ch == ch)) {
@@ -101,19 +101,19 @@ int main(int argc, char **argv) {
           }
         }
       } 
-      else if (event == POLY_AFTERTOUCH) { i += 2; }
-      else if (event == CC)              { i += 2; }
-      else if (event == PROGRAM_CHANGE)  { i ++; }
-      else if (event == CHAN_AFTERTOUCH) { i ++; }
-      else if (event == PITCH_BEND)      { i += 2; }
-      else if (event == MTC)             { i ++; }
-      else if (event == SONG_POSITION)   { i += 2; }
-      else if (event == SONG_SELECT)     { i ++; }
-      else if (event == PITCH_BEND)      { i += 2; }
-      else if (event == TUNE_REQUEST)    { continue; }
-      else if (event == SYSEX_START)     { inSysex = true; }
-      else if (IS_REAL_TIME_MSG(event))  { continue; }
-      else                               { continue; }
+      else if (event == POLY_AFTERTOUCH)  { i += 2; }
+      else if (event == CC)               { i += 2; }
+      else if (event == PROGRAM_CHANGE)   { i ++; }
+      else if (event == CHAN_AFTERTOUCH)  { i ++; }
+      else if (event == PITCH_BEND)       { i += 2; }
+      else if (buf[i] == MTC)             { i ++; }
+      else if (buf[i] == SONG_POSITION)   { i += 2; }
+      else if (buf[i] == SONG_SELECT)     { i ++; }
+      else if (buf[i] == PITCH_BEND)      { i += 2; }
+      else if (buf[i] == TUNE_REQUEST)    { continue; }
+      else if (buf[i] == SYSEX_START)     { inSysex = true; }
+      else if (buf[i] >= REAL_TIME_EVENT) { continue; }
+      else                                { continue; }
     }
   }
   return 0;
